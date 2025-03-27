@@ -15,6 +15,7 @@ class DrawRead():
     is_deletion = False
     is_insertion = False
     is_inversion = False
+    is_duplication = False
     refseq = {}
     x1 = 0
     x2 = 0
@@ -27,6 +28,7 @@ class DrawRead():
         self.id = a.query_name
         self.is_proper_pair = a.is_proper_pair
         self.is_reverse = a.is_reverse
+        self.is_forward = a.is_forward
 
         self.g_positions = self.base_plus_1(a.positions)
         self.g_spos = self.g_positions[0] 
@@ -54,6 +56,7 @@ class DrawRead():
         self.mate_reference_name = a.next_reference_name
         self.mate_reference_start = a.next_reference_start
         self.mate_is_reverse = a.mate_is_reverse
+        self.mate_is_forward = a.mate_is_forward
         self.has_interchrom_mate = self.reference_name != self.mate_reference_name
         self.insert_size = a.tlen
         
@@ -79,7 +82,8 @@ class DrawRead():
                 # print(self.insert_size, self.g_spos, self.g_epos, self.is_reverse,
                 #     self.mate_reference_start, self.mate_is_reverse, self.id, self.a.tlen)
                 pass
-            
+            if ((self.is_reverse and self.mate_is_forward and self.g_spos < self.mate_reference_start) or (self.is_forward and self.mate_is_reverse and self.g_spos > self.mate_reference_start)) and abs(self.g_epos-self.mate_reference_start) >= self.opt['insert_size_del_threshold'] :
+                self.is_duplication = True
 
     def set_read_variant(self):
         gpos = self.g_spos
@@ -228,10 +232,15 @@ class DrawRead():
                 xy.append((x1, y1 + int(self.read_thickness / 2) ))
                 xy.append((x1 - raht, y1))
 
-            if self.is_deletion:
-                col1 = self.opt['read_color_deletion']
             if self.is_inversion:
-                col1 = self.opt['read_color_inversion']
+                if self.is_reverse and self.mate_is_reverse:
+                    col1 = self.opt['read_color_inversion_1']
+                else:
+                    col1 = self.opt['read_color_inversion_2']   
+            if not self.is_inversion and self.is_deletion:
+                col1 = self.opt['read_color_deletion']
+            if not self.is_inversion and self.is_duplication:
+                col1 = self.opt['read_color_duplication']
 
             if readcolorby == "interchrom":
                 col1 = self.get_readcolor_by_interchrom(col1)
