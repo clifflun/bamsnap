@@ -297,8 +297,11 @@ class DrawReadSet():
 
         for group in group_list:
             self.max_cov[group] = 0
-
-        for a in self.samAlign.fetch(self.chrom, self.g_spos-self.read_gap_w-500, self.g_epos+500):
+        if (self.g_spos-self.read_gap_w-500) <= 0:
+            new_start=0
+        else:
+            new_start = self.g_spos-self.read_gap_w-500
+        for a in self.samAlign.fetch(self.chrom, new_start, self.g_epos+500):
             if len(a.positions) > 0:
                 rid = self.get_rid(a)
                 self.update_ref_seq_with_read(a)
