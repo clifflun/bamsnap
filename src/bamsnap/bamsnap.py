@@ -230,6 +230,8 @@ def run_process_drawplot_bamlist(image_w, bamlist, poslist, opt, is_single_image
     bsplot = BamSnapPlot(opt)
     bsplot.set_is_single_image_out(is_single_image_out)
     for pos1 in poslist:
+        if pos1['g_spos'] <= 0:
+            pos1['g_spos']=1
         t11 = time.time()
         refseq = rseq.get_refseq(pos1)
         xscale = Xscale(pos1['g_spos'], pos1['g_epos'], image_w)
@@ -561,6 +563,8 @@ class ReferenceSequence():
     def get_refseq_from_ucsc(self, pos1):
         spos = pos1['g_spos']-self.opt['margin'] - 500
         epos = pos1['g_epos']+self.opt['margin'] + 1 + 500
+        if spos <=0:
+            spos =1
         # seqver = "hg38"
         seqver = self.opt['refversion']
         if not pos1['chrom'].startswith('chr'):
